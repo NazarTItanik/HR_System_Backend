@@ -1,0 +1,72 @@
+﻿using HR_System.Data;
+using HR_System.Enums;
+using HR_System.Models.DTOs;
+using HR_System.Models.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace HR_System.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ContractsController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+
+        public ContractsController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: api/Contracts/employee/5
+        [HttpGet("employee/{employeeId}")]
+        public async Task<IActionResult> GetByEmployee(Guid employeeId)
+        {
+            var contracts = await _context.EmploymentContracts
+                .Where(c => c.EmployeeId == employeeId)
+                .OrderByDescending(c => c.StartDate)
+                .ToListAsync();
+
+            return Ok(contracts);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] ContractCreateDto dto)
+        {
+            // 1. Validate employee exists
+            var employee = await _context.Employees.FindAsync(dto.EmployeeId);
+            if (employee == null) return NotFound("Employee not found.");
+
+            // 2. Logic: Deactivate any existing active contract for this employee
+            var activeContracts = await _context.EmploymentContracts
+                .Where(c => c.EmployeeId == dto.EmployeeId && c.IsActive)
+                .ToListAsync();
+
+            foreach (var contract in activeContracts)
+            {
+                contract.IsActive = false;
+                contract.EndDate = DateTime.Now;
+            }
+
+            // 3. Create the new contract
+            var newContract = new EmploymentContract
+            {
+                Id = Guid.NewGuid(),
+                EmployeeId = dto.EmployeeId,
+                VacancyId = dto.VacancyId,
+                BaseSalary = dto.BaseSalary,
+                StartDate = dto.StartDate,
+                WorkType = dto.WorkType,
+                WageType = dto.WageType,
+                IsActive = true // Mark the new one as active
+            };
+
+            _context.EmploymentContracts.Add(newContract);
+
+            // 4. Save changes
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Contract created successfully." });
+        }
+    }
+}
