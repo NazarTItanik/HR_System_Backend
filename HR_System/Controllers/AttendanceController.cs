@@ -188,7 +188,7 @@ namespace HR_System.Controllers
             return Ok(new { message = $"Deleted {records.Count} records." });
         }
 
-        [HttpPost("update")] // POST /api/Attendance/update
+        [HttpPost("update")]
         public async Task<IActionResult> Update([FromBody] Attendance model)
         {
   

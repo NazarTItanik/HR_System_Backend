@@ -208,5 +208,64 @@ namespace HR_System.Controllers
                 .OrderByDescending(p => p.GenerationDate)
                 .ToListAsync();
         }
+
+        [HttpPost("mark-paid-multiple")]
+        public async Task<IActionResult> MarkPaidMultiple([FromBody] List<Guid> ids)
+        {
+            if (ids == null || !ids.Any()) return BadRequest("No payslip IDs provided.");
+
+            var payslips = await _context.Payslips
+                .Where(p => ids.Contains(p.Id))
+                .ToListAsync();
+
+            foreach (var payslip in payslips)
+            {
+                payslip.Status = PayslipStatus.Paid;
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpPost("delete-multiple")]
+        public async Task<IActionResult> DeleteMultiple([FromBody] List<Guid> ids)
+        {
+            if (ids == null || !ids.Any()) return BadRequest("No payslip IDs provided.");
+
+            var payslips = await _context.Payslips
+                .Where(p => ids.Contains(p.Id))
+                .ToListAsync();
+
+            _context.Payslips.RemoveRange(payslips);
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
+
+        [HttpGet("employee/{employeeId}")]
+        public async Task<IActionResult> GetPayslipsByEmployee(Guid employeeId)
+        {
+            // Ensure the ID is valid
+            if (employeeId == Guid.Empty)
+            {
+                return BadRequest("Invalid employee ID.");
+            }
+
+            // Fetch the payslips for this specific employee
+            var payslips = await _context.Payslips
+                .Where(p => p.EmployeeId == employeeId)
+                .OrderByDescending(p => p.GenerationDate) // Puts the newest payslips first
+                .ToListAsync();
+
+            // Return an empty list instead of 404 so your Angular table stays clean
+            if (payslips == null || !payslips.Any())
+            {
+                return Ok(new List<Payslip>());
+            }
+
+            return Ok(payslips);
+        }
+
+
     }
 }
