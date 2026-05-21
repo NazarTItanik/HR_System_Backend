@@ -200,18 +200,13 @@ namespace HR_System.Controllers
             return Ok(generatedPayslips);
         }
 
-        private int GetWorkingDays(DateTime startDate, DateTime endDate)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Payslip>>> GetPayslips()
         {
-            int workingDays = 0;
-            for (DateTime date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
-            {
-                // Skip weekends
-                if (date.DayOfWeek != DayOfWeek.Saturday && date.DayOfWeek != DayOfWeek.Sunday)
-                {
-                    workingDays++;
-                }
-            }
-            return workingDays;
+            // Return all payslips, optionally ordered by generation date
+            return await _context.Payslips
+                .OrderByDescending(p => p.GenerationDate)
+                .ToListAsync();
         }
     }
 }

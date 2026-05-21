@@ -1,7 +1,6 @@
 ﻿using HR_System.Models;
 using HR_System.Models.Entities;
 using Microsoft.EntityFrameworkCore;
-using Supabase.Gotrue;
 
 namespace HR_System.Data
 {

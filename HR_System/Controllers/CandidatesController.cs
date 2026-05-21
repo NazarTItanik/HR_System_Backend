@@ -225,6 +225,25 @@ namespace HR_System.Controllers
             return Ok(new { message = "Stage updated successfully" });
         }
 
+        [HttpPost("delete-multiple")]
+        public async Task<IActionResult> DeleteMultiple([FromBody] List<Guid> ids)
+        {
+            if (ids == null || ids.Count == 0)
+                return BadRequest(new { message = "No IDs provided" });
+
+            var candidates = await _context.Candidates
+                .Where(c => ids.Contains(c.Id))
+                .ToListAsync();
+
+            if (candidates.Count == 0)
+                return NotFound(new { message = "No matching candidates found" });
+
+            _context.Candidates.RemoveRange(candidates);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = $"{candidates.Count} candidate(s) deleted successfully" });
+        }
+
 
     }
 }

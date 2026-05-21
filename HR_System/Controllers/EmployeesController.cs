@@ -40,7 +40,6 @@ namespace HR_System.Controllers
                 Role = "Employee",
                 ContactNumber = dto.ContactNumber,
                 PasswordHash = hashedPassword,
-                HireDate = dto.HireDate.ToUniversalTime(),
                 Status = "Active"
             };
 

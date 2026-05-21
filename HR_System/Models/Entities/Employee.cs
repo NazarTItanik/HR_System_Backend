@@ -32,7 +32,7 @@ namespace HR_System.Models.Entities
         [MaxLength(100)]
         public string ContactNumber { get; set; } = string.Empty;
 
-        public DateTime HireDate { get; set; }
+        public DateTime HireDate { get; set; } = DateTime.Now;
 
         public string Status { get; set; } = "Active";
 

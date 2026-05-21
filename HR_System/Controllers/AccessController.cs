@@ -7,7 +7,6 @@ using HR_System.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Crypto.Generators;
-using Supabase.Gotrue;
 using System.Text;
 
 namespace HR_System.Controllers

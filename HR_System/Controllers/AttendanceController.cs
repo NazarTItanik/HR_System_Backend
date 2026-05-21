@@ -132,6 +132,44 @@ namespace HR_System.Controllers
             return Ok(attendance);
         }
 
+        [HttpPost("approve-multiple")]
+        public async Task<IActionResult> ApproveMultiple([FromBody] List<Guid> ids)
+        {
+            if (ids == null || !ids.Any()) return BadRequest("No IDs provided.");
+
+            var records = await _context.Attendances
+                .Where(a => ids.Contains(a.Id))
+                .ToListAsync();
+
+            if (!records.Any()) return NotFound("No records found.");
+
+            foreach (var a in records)
+                a.Status = AttendanceStatus.Validated;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = $"{records.Count} attendance(s) approved." });
+        }
+
+        [HttpPost("reject-multiple")]
+        public async Task<IActionResult> RejectMultiple([FromBody] List<Guid> ids)
+        {
+            if (ids == null || !ids.Any()) return BadRequest("No IDs provided.");
+
+            var records = await _context.Attendances
+                .Where(a => ids.Contains(a.Id))
+                .ToListAsync();
+
+            if (!records.Any()) return NotFound("No records found.");
+
+            foreach (var a in records)
+                a.Status = AttendanceStatus.Rejected;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = $"{records.Count} attendance(s) rejected." });
+        }
+
         [HttpPost("delete-multiple")]
         public async Task<IActionResult> DeleteMultiple([FromBody] List<Guid> ids)
         {
@@ -153,14 +191,13 @@ namespace HR_System.Controllers
         [HttpPost("update")] // POST /api/Attendance/update
         public async Task<IActionResult> Update([FromBody] Attendance model)
         {
-            // 1. Find the existing record by ID
+  
             var existing = await _context.Attendances.FindAsync(model.Id);
             if (existing == null)
             {
                 return NotFound($"Attendance record with ID {model.Id} not found.");
             }
 
-            // 2. Map the updated fields
             existing.EmployeeId = model.EmployeeId;
             existing.Date = model.Date;
             existing.ClockIn = model.ClockIn;
